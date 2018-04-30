@@ -1,0 +1,17 @@
+room1 = (
+    'MMMMMMMMMMMMMMMMMMMM',
+    'MM    M         MM M',
+    'M M      M  M      M',
+    'M M M    M         M',
+    'M M   M MMMM       M',
+    'M   M M  M         M',
+    'MMM M    M    MM   M',
+    'M        M  M      M',
+    'M M  M M M        MM',
+    'M      M    M   M  M',
+    'MMMMMMM        MM  M',
+    'M  M       M       M',
+    'M  M  MM      M    M',
+    'M  M      MM       M',
+    'MMMMMMMMMMMMMMMMMMMM',
+)
