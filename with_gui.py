@@ -2,7 +2,7 @@ import random
 import tkinter as tk
 from typing import Dict
 
-from rooms import room1
+from rooms import room1, room2
 
 DIRECTIONS = {
     'UP': (-1, 0),
@@ -59,13 +59,13 @@ class Cell:
 
 class RoomGui(tk.Tk):
 
-    def __init__(self, aspirateur_class):
+    def __init__(self, aspirateur_class: type, room: str):
         super().__init__()
         self.loop_number = 0
         self.title('Laspirateur')
         self.active = True
 
-        self.data = room1
+        self.data = room
         self.cell_height = 20
         self.cell_width = 20
 
@@ -132,5 +132,5 @@ class CleverAspirateur(Aspirateur):
 
 
 if __name__ == '__main__':
-    app = RoomGui(AspirateurRandom)
+    app = RoomGui(CleverAspirateur, room1)
     app.mainloop()
