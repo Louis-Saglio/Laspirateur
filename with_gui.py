@@ -1,9 +1,7 @@
 import random
-import time
 import tkinter as tk
 
 from rooms import room1
-
 
 DIRECTIONS = {
     'UP': (-1, 0),
@@ -97,7 +95,6 @@ class RoomGui(tk.Tk):
             self.aspirateur_cell = self.aspirateur.random_move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
             self.aspirateur_cell.show()
-            time.sleep(0.05)
 
     def destroy(self):
         self.active = False
@@ -105,8 +102,16 @@ class RoomGui(tk.Tk):
 
 class Aspirateur:
 
+    def __init__(self):
+        self.last_cell = None
+        self.move = self.random_move
+
     def random_move(self, surroundings: dict) -> Cell:
-        return random.choice(list(surroundings.values()))
+        surroundings = list(surroundings.values())
+        next_cell = random.choice(surroundings)
+        while len(surroundings) > 1 and next_cell is self.last_cell:
+            next_cell = random.choice(surroundings)
+        return next_cell
 
 
 if __name__ == '__main__':
