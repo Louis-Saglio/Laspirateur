@@ -119,6 +119,21 @@ class AspirateurRandom(Aspirateur):
         return random.choice(list(surroundings.values()))
 
 
+class CleverAspirateur(Aspirateur):
+
+    def __init__(self):
+        self.coordinates = 0, 0
+        self.passed = {self.coordinates}
+
+    def move(self, surroundings: Dict[str, Cell]) -> Cell:
+        next_direction = random.choice(list(surroundings.keys()))
+        self.coordinates[0] += DIRECTIONS[next_direction][0]
+        self.coordinates[1] += DIRECTIONS[next_direction][1]
+        self.passed.add(self.coordinates)
+        print(self.passed)
+        return surroundings[next_direction]
+
+
 if __name__ == '__main__':
     app = RoomGui(AspirateurRandom)
     app.mainloop()
