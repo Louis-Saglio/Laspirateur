@@ -12,21 +12,13 @@ DIRECTIONS = {
     'RIGHT': (0, +1)
 }
 
-
-class Value:
-    colors = {'M': 'blue', ' ': 'yellow', 'aspirateur': 'red', 'passed': 'green'}
-
-    def __init__(self, value):
-        self.value = value
-
-    def __hash__(self):
-        return hash(self.value)
+COLORS = {'M': 'blue', ' ': 'yellow', 'aspirateur': 'red', 'passed': 'green'}
 
 
 class Cell:
     cells = {}
 
-    def __init__(self, room: "RoomGui", value: Value, coordinates):
+    def __init__(self, room: "RoomGui", value, coordinates):
         self.room = room
         self.value = value
         self.contains = set()
@@ -55,17 +47,17 @@ class Cell:
         surroundings = {}
         for name, direction in DIRECTIONS.items():
             surrounding: Cell = Cell.cells[(self.coordinates[0] + direction[0], self.coordinates[1] + direction[1])]
-            if surrounding.value.value == ' ':
+            if surrounding.value == ' ':
                 surroundings[name] = surrounding
         return surroundings
 
     def show(self):
         if self.contains_aspirateur():
-            color = Value.colors['aspirateur']
+            color = COLORS['aspirateur']
         elif self.passed:
-            color = Value.colors['passed']
+            color = COLORS['passed']
         else:
-            color = Value.colors[self.value.value]
+            color = COLORS[self.value]
         tk.Frame(
             self.room,
             height=self.room.cell_height,
@@ -90,10 +82,10 @@ class RoomGui(tk.Tk):
 
         for i, row in enumerate(self.data):
             for j, cell in enumerate(row):
-                Cell(self, Value(cell), (i, j)).show()
+                Cell(self, cell, (i, j)).show()
 
         self.aspirateur = Aspirateur()
-        self.aspirateur_cell: Cell = random.choice([cell for cell in Cell.cells.values() if cell.value.value == ' '])
+        self.aspirateur_cell: Cell = random.choice([cell for cell in Cell.cells.values() if cell.value == ' '])
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
 
