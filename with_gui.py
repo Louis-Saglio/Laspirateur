@@ -16,7 +16,6 @@ COLORS = {'M': 'blue', ' ': 'yellow', 'aspirateur': 'red', 'passed': 'green'}
 
 
 class Cell:
-    cells = {}
 
     def __init__(self, room: "RoomGui", value, coordinates):
         self.room = room
@@ -24,7 +23,6 @@ class Cell:
         self.contains = set()
         self.coordinates = coordinates
         self.passed = False
-        Cell.cells[self.coordinates] = self
 
     def move_in(self, pawn):
         self.contains.add(pawn)
@@ -42,14 +40,6 @@ class Cell:
             if isinstance(item, Aspirateur):
                 return True
         return False
-
-    def get_surroundings(self):
-        surroundings = {}
-        for name, direction in DIRECTIONS.items():
-            surrounding: Cell = Cell.cells[(self.coordinates[0] + direction[0], self.coordinates[1] + direction[1])]
-            if surrounding.value == ' ':
-                surroundings[name] = surrounding
-        return surroundings
 
     def show(self):
         if self.contains_aspirateur():
@@ -80,21 +70,31 @@ class RoomGui(tk.Tk):
         self.cell_height = 20
         self.cell_width = 20
 
+        self.cells = {}
         for i, row in enumerate(self.data):
             for j, cell in enumerate(row):
-                Cell(self, cell, (i, j)).show()
+                self.cells[i, j] = Cell(self, cell, (i, j))
+                self.cells[i, j].show()
 
         self.aspirateur = Aspirateur()
-        self.aspirateur_cell: Cell = random.choice([cell for cell in Cell.cells.values() if cell.value == ' '])
+        self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
+
+    def get_surroundings(self, cell: Cell):
+        surroundings = {}
+        for name, direction in DIRECTIONS.items():
+            surrounding: Cell = self.cells[(cell.coordinates[0] + direction[0], cell.coordinates[1] + direction[1])]
+            if surrounding.value == ' ':
+                surroundings[name] = surrounding
+        return surroundings
 
     def mainloop(self, n=0):
         while self.active:
             self.update()
             self.aspirateur_cell.move_from(self.aspirateur)
             self.aspirateur_cell.show()
-            self.aspirateur_cell = self.aspirateur.random_move(self.aspirateur_cell.get_surroundings())
+            self.aspirateur_cell = self.aspirateur.random_move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
             self.aspirateur_cell.show()
             time.sleep(0.05)
