@@ -5,11 +5,12 @@ import tkinter as tk
 from rooms import room1
 
 
-class Direction:
-
-    def __init__(self, height_dir, width_dir):
-        self.width_dir = width_dir
-        self.height_dir = height_dir
+DIRECTIONS = {
+    'UP': (-1, 0),
+    'DOWN': (+1, 0),
+    'LEFT': (0, -1),
+    'RIGHT': (0, +1)
+}
 
 
 class Value:
@@ -50,6 +51,14 @@ class Cell:
                 return True
         return False
 
+    def get_surroundings(self):
+        surroundings = {}
+        for name, direction in DIRECTIONS.items():
+            surrounding: Cell = Cell.cells[(self.coordinates[0] + direction[0], self.coordinates[1] + direction[1])]
+            if surrounding.value.value == ' ':
+                surroundings[name] = surrounding
+        return surroundings
+
     def show(self):
         if self.contains_aspirateur():
             color = Value.colors['aspirateur']
@@ -83,13 +92,19 @@ class RoomGui(tk.Tk):
             for j, cell in enumerate(row):
                 Cell(self, Value(cell), (i, j)).show()
 
+        self.aspirateur = Aspirateur()
         self.aspirateur_cell: Cell = random.choice([cell for cell in Cell.cells.values() if cell.value.value == ' '])
-        self.aspirateur_cell.move_in(Aspirateur())
+        self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
 
     def mainloop(self, n=0):
         while self.active:
             self.update()
+            self.aspirateur_cell.move_from(self.aspirateur)
+            self.aspirateur_cell.show()
+            self.aspirateur_cell = self.aspirateur.random_move(self.aspirateur_cell.get_surroundings())
+            self.aspirateur_cell.move_in(self.aspirateur)
+            self.aspirateur_cell.show()
             time.sleep(0.05)
 
     def destroy(self):
@@ -98,15 +113,8 @@ class RoomGui(tk.Tk):
 
 class Aspirateur:
 
-    def __init__(self):
-        self.dir = 0
-
-    def random_move(self, adjacents):
-        for i, adjacent in enumerate(adjacents):
-            if adjacent == ' ' and i == self.dir and random.randint(0, 4) != 0:
-                return i
-        self.dir = random.choice([n for n, adjacent in enumerate(adjacents) if adjacent == ' '])
-        return self.dir
+    def random_move(self, surroundings: dict) -> Cell:
+        return random.choice(list(surroundings.values()))
 
 
 if __name__ == '__main__':
