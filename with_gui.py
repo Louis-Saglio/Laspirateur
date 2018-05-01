@@ -75,7 +75,7 @@ class RoomGui(tk.Tk):
                 self.cells[i, j] = Cell(self, cell, (i, j))
                 self.cells[i, j].show()
 
-        self.aspirateur = Aspirateur()
+        self.aspirateur = AspirateurRandom()
         self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
@@ -94,7 +94,7 @@ class RoomGui(tk.Tk):
             self.update()
             self.aspirateur_cell.move_from(self.aspirateur)
             self.aspirateur_cell.show()
-            self.aspirateur_cell = self.aspirateur.random_move(self.get_surroundings(self.aspirateur_cell))
+            self.aspirateur_cell = self.aspirateur.move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
             self.aspirateur_cell.show()
 
@@ -105,16 +105,17 @@ class RoomGui(tk.Tk):
 
 class Aspirateur:
 
-    def __init__(self):
-        self.last_cell = None
-        self.move = self.random_move
+    def move(self, surroundings):
+        raise NotImplementedError
 
-    def random_move(self, surroundings: dict) -> Cell:
-        surroundings = list(surroundings.values())
-        next_cell = random.choice(surroundings)
-        while len(surroundings) > 1 and next_cell is self.last_cell:
-            next_cell = random.choice(surroundings)
-        return next_cell
+
+class AspirateurRandom(Aspirateur):
+
+    def __init__(self):
+        self.last_cells = None, None
+
+    def move(self, surroundings: dict) -> Cell:
+        return random.choice(list(surroundings.values()))
 
 
 if __name__ == '__main__':
