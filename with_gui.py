@@ -1,4 +1,5 @@
 import random
+import time
 import tkinter as tk
 from typing import Dict
 
@@ -76,7 +77,8 @@ class RoomGui(tk.Tk):
                 self.cells[i, j].show()
 
         self.aspirateur: Aspirateur = aspirateur_class()
-        self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
+        # self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
+        self.aspirateur_cell: Cell = self.cells[(5, 5)]
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
 
@@ -95,6 +97,7 @@ class RoomGui(tk.Tk):
             self.aspirateur_cell.move_from(self.aspirateur)
             self.aspirateur_cell = self.aspirateur.move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
+            time.sleep(0.05)
 
     def destroy(self):
         print(self.loop_number)
@@ -120,23 +123,36 @@ class CleverAspirateur(Aspirateur):
 
     def __init__(self):
         self.coordinates = 0, 0
-        self.passed = {self.coordinates}
+        self.passed = {self.coordinates: 0}
 
     def move(self, surroundings: Dict[str, Cell]) -> Cell:
-        surrounding_directions = list(surroundings.keys())
-        random.shuffle(surrounding_directions)
-        for next_direction in surrounding_directions:
+        """
+        surroundings : {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
+        surroundings contains only available directions
+        """
+        buffer = {}
+        for next_direction in surroundings:
+            # compute relative coordinates of the direction
             coordinates = (
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
                 self.coordinates[1] + DIRECTIONS[next_direction][1]
             )
+            buffer[next_direction] = coordinates
             if coordinates not in self.passed:
+                # If we are never been in this cell, let's go into
                 break
+        else:
+            # If break statement is not raised
+            next_direction = min(surroundings, key=lambda x: self.passed[buffer[x]])
+            coordinates = buffer[next_direction]
         self.coordinates = coordinates
-        self.passed.add(self.coordinates)
+        if self.coordinates in self.passed:
+            self.passed[self.coordinates] += 1
+        else:
+            self.passed[self.coordinates] = 1
         return surroundings[next_direction]
 
 
 if __name__ == '__main__':
-    app = RoomGui(CleverAspirateur, room1)
+    app = RoomGui(CleverAspirateur, room2)
     app.mainloop()
