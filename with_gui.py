@@ -123,11 +123,17 @@ class CleverAspirateur(Aspirateur):
         self.passed = {self.coordinates}
 
     def move(self, surroundings: Dict[str, Cell]) -> Cell:
-        next_direction = random.choice(list(surroundings.keys()))
-        self.coordinates[0] += DIRECTIONS[next_direction][0]
-        self.coordinates[1] += DIRECTIONS[next_direction][1]
+        surrounding_directions = list(surroundings.keys())
+        random.shuffle(surrounding_directions)
+        for next_direction in surrounding_directions:
+            coordinates = (
+                self.coordinates[0] + DIRECTIONS[next_direction][0],
+                self.coordinates[1] + DIRECTIONS[next_direction][1]
+            )
+            if coordinates not in self.passed:
+                break
+        self.coordinates = coordinates
         self.passed.add(self.coordinates)
-        print(self.passed)
         return surroundings[next_direction]
 
 
