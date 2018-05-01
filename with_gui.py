@@ -61,6 +61,7 @@ class RoomGui(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.loop_number = 0
         self.title('Laspirateur')
         self.active = True
 
@@ -89,6 +90,7 @@ class RoomGui(tk.Tk):
 
     def mainloop(self, n=0):
         while self.active:
+            self.loop_number += 1
             self.update()
             self.aspirateur_cell.move_from(self.aspirateur)
             self.aspirateur_cell.show()
@@ -97,6 +99,7 @@ class RoomGui(tk.Tk):
             self.aspirateur_cell.show()
 
     def destroy(self):
+        print(self.loop_number)
         self.active = False
 
 
