@@ -27,12 +27,11 @@ class Cell:
         self.contains.add(pawn)
         if isinstance(pawn, Aspirateur):
             self.passed = True
+        self.show()
 
     def move_from(self, pawn):
         self.contains.remove(pawn)
-
-    def __contains__(self, item):
-        return item in self.contains
+        self.show()
 
     def contains_aspirateur(self):
         for item in self.contains:
@@ -94,10 +93,8 @@ class RoomGui(tk.Tk):
             self.loop_number += 1
             self.update()
             self.aspirateur_cell.move_from(self.aspirateur)
-            self.aspirateur_cell.show()
             self.aspirateur_cell = self.aspirateur.move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
-            self.aspirateur_cell.show()
 
     def destroy(self):
         print(self.loop_number)
