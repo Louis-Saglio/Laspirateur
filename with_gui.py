@@ -1,5 +1,6 @@
 import random
 import tkinter as tk
+from typing import Dict
 
 from rooms import room1
 
@@ -59,7 +60,7 @@ class Cell:
 
 class RoomGui(tk.Tk):
 
-    def __init__(self):
+    def __init__(self, aspirateur_class):
         super().__init__()
         self.loop_number = 0
         self.title('Laspirateur')
@@ -75,7 +76,7 @@ class RoomGui(tk.Tk):
                 self.cells[i, j] = Cell(self, cell, (i, j))
                 self.cells[i, j].show()
 
-        self.aspirateur = AspirateurRandom()
+        self.aspirateur: Aspirateur = aspirateur_class()
         self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
@@ -105,7 +106,7 @@ class RoomGui(tk.Tk):
 
 class Aspirateur:
 
-    def move(self, surroundings):
+    def move(self, surroundings: Dict[str, Cell]) -> Cell:
         raise NotImplementedError
 
 
@@ -114,10 +115,10 @@ class AspirateurRandom(Aspirateur):
     def __init__(self):
         self.last_cells = None, None
 
-    def move(self, surroundings: dict) -> Cell:
+    def move(self, surroundings: Dict[str, Cell]) -> Cell:
         return random.choice(list(surroundings.values()))
 
 
 if __name__ == '__main__':
-    app = RoomGui()
+    app = RoomGui(AspirateurRandom)
     app.mainloop()
