@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 from typing import Dict
 
-from rooms import room1, room2
+from rooms import room1, room2, room3
 
 DIRECTIONS = {
     'UP': (-1, 0),
@@ -78,7 +78,8 @@ class RoomGui(tk.Tk):
 
         self.aspirateur: Aspirateur = aspirateur_class()
         # self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
-        self.aspirateur_cell: Cell = self.cells[(5, 5)]
+        # self.aspirateur_cell: Cell = self.cells[(8, 72)]
+        self.aspirateur_cell: Cell = self.cells[(1, 1)]
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
 
@@ -97,7 +98,7 @@ class RoomGui(tk.Tk):
             self.aspirateur_cell.move_from(self.aspirateur)
             self.aspirateur_cell = self.aspirateur.move(self.get_surroundings(self.aspirateur_cell))
             self.aspirateur_cell.move_in(self.aspirateur)
-            time.sleep(0.05)
+            time.sleep(0.02)
 
     def destroy(self):
         print(self.loop_number)
@@ -131,7 +132,9 @@ class CleverAspirateur(Aspirateur):
         surroundings contains only available directions
         """
         buffer = {}
-        for next_direction in surroundings:
+        cp_surroundings = list(surroundings)
+        random.shuffle(cp_surroundings)
+        for next_direction in cp_surroundings:
             # compute relative coordinates of the direction
             coordinates = (
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
