@@ -154,5 +154,5 @@ class CleverAspirateur(Aspirateur):
 
 
 if __name__ == '__main__':
-    app = RoomGui(CleverAspirateur, room2)
+    app = RoomGui(CleverAspirateur, room3)
     app.mainloop()

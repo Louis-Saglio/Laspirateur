@@ -47,3 +47,17 @@ room2 = (
     'M  M      MM         M      MM       M',
     'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
 )
+
+
+room3 = (
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+    'M M M    MM   MM   MM M         MM   MM M    MM   MM   MM M         MM   M',
+    'M           M                 M                 M                 M      M',
+    'M M  M M M        M M  M M M        M M  M M M        M M  M M M        MM',
+    'M      M    M   M   M    M    M   M        M    M   M        M    M   M  M',
+    'MMMMMMM        MM  MMMM     M     MM MM   M        MM  MM MM    M     MM M',
+    'M  M       M                 M         M       M                 M       M',
+    'M  M  MM      M        MM      M         MM      M      M  MM      MM    M',
+    'M         MM         M      MM         M      MM         M      MM       M',
+    'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+)
