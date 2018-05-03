@@ -104,7 +104,11 @@ class RoomGui(tk.Tk):
             time.sleep(0.02)
 
     def destroy(self):
-        print(self.loop_number)
+        loop_number = self.loop_number
+        print('loop number', loop_number)
+        surface = len(self.data[0]) * len(self.data)
+        print('surface', surface)
+        print('score', round(surface / loop_number, 2))
         self.active = False
 
 
