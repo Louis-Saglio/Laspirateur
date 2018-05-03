@@ -3,7 +3,8 @@ import time
 import tkinter as tk
 from typing import Dict
 
-from rooms import room1, room2, room3
+from labygenerator import get_full_string_format_lab
+from rooms import room1, room2, room3, room4
 
 DIRECTIONS = {
     'UP': (-1, 0),
@@ -164,5 +165,6 @@ class CleverAspirateur(Aspirateur):
 
 
 if __name__ == '__main__':
-    app = RoomGui(CleverAspirateur, room3)
+    app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(10, 50), random.randint(10, 50)))
+    # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
     app.mainloop()
