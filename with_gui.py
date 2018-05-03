@@ -23,6 +23,7 @@ class Cell:
         self.contains = set()
         self.coordinates = coordinates
         self.passed = False
+        self.frame = None
 
     def move_in(self, pawn):
         self.contains.add(pawn)
@@ -47,12 +48,16 @@ class Cell:
             color = COLORS['passed']
         else:
             color = COLORS[self.value]
-        tk.Frame(
-            self.room,
-            height=self.room.cell_height,
-            width=self.room.cell_width,
-            background=color
-        ).grid(row=self.coordinates[0], column=self.coordinates[1])
+        if self.frame is None:
+            self.frame = tk.Frame(
+                self.room,
+                height=self.room.cell_height,
+                width=self.room.cell_width,
+                background=color
+            )
+        else:
+            self.frame.configure(background=color)
+        self.frame.grid(row=self.coordinates[0], column=self.coordinates[1])
 
     def __hash__(self):
         return hash(self.coordinates)
@@ -77,9 +82,7 @@ class RoomGui(tk.Tk):
                 self.cells[i, j].show()
 
         self.aspirateur: Aspirateur = aspirateur_class()
-        # self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
-        # self.aspirateur_cell: Cell = self.cells[(8, 72)]
-        self.aspirateur_cell: Cell = self.cells[(1, 1)]
+        self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
         self.aspirateur_cell.move_in(self.aspirateur)
         self.aspirateur_cell.show()
 
