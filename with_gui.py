@@ -1,61 +1,48 @@
+from __future__ import annotations
+
 import random
 import time
 import tkinter as tk
-from typing import Dict
+from typing import Dict, Type, List, Tuple
 
-from labygenerator import get_full_string_format_lab
-from rooms import room1, room2, room3, room4
+DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
-DIRECTIONS = {
-    'UP': (-1, 0),
-    'DOWN': (+1, 0),
-    'LEFT': (0, -1),
-    'RIGHT': (0, +1)
-}
-
-COLORS = {'M': 'blue', ' ': 'yellow', 'aspirateur': 'red', 'passed': 'green'}
+COLORS = {"M": "blue", " ": "yellow", "aspirateur": "red", "passed": "green"}
 
 
 class Cell:
-
-    def __init__(self, room: "RoomGui", value, coordinates):
+    def __init__(self, room: RoomGui, value: str, coordinates: Tuple[int, int]):
         self.room = room
         self.value = value
-        self.contains = set()
+        self.content = set()
         self.coordinates = coordinates
-        self.passed = False
+        self.has_been_visited = False
         self.frame = None
 
-    def move_in(self, pawn):
-        self.contains.add(pawn)
-        if isinstance(pawn, Aspirateur):
-            self.passed = True
+    def move_in(self, pawn: object) -> None:
+        self.content.add(pawn)
+        self.has_been_visited = True
         self.show()
 
-    def move_from(self, pawn):
-        self.contains.remove(pawn)
+    def move_from(self, pawn: object) -> None:
+        self.content.remove(pawn)
         self.show()
 
-    def contains_aspirateur(self):
-        for item in self.contains:
+    def contains_aspirateur(self) -> bool:
+        for item in self.content:
             if isinstance(item, Aspirateur):
                 return True
         return False
 
-    def show(self):
+    def show(self) -> None:
         if self.contains_aspirateur():
-            color = COLORS['aspirateur']
-        elif self.passed:
-            color = COLORS['passed']
+            color = COLORS["aspirateur"]
+        elif self.has_been_visited:
+            color = COLORS["passed"]
         else:
             color = COLORS[self.value]
         if self.frame is None:
-            self.frame = tk.Frame(
-                self.room,
-                height=self.room.cell_height,
-                width=self.room.cell_width,
-                background=color
-            )
+            self.frame = tk.Frame(self.room, height=self.room.cell_height, width=self.room.cell_width, background=color)
         else:
             self.frame.configure(background=color)
         self.frame.grid(row=self.coordinates[0], column=self.coordinates[1])
@@ -65,76 +52,71 @@ class Cell:
 
 
 class RoomGui(tk.Tk):
-
-    def __init__(self, aspirateur_class: type, room: str):
+    def __init__(self, aspirateur_class: Type[Aspirateur], room: List[str]):
+        print(room)
         super().__init__()
         self.loop_number = 0
-        self.title('Laspirateur')
+        self.title("Laspirateur")
         self.active = True
 
-        self.data = room
+        self.room = room
         self.cell_height = 20
         self.cell_width = 20
 
         self.cells = {}
-        for i, row in enumerate(self.data):
+        for i, row in enumerate(self.room):
             for j, cell in enumerate(row):
                 self.cells[i, j] = Cell(self, cell, (i, j))
                 self.cells[i, j].show()
 
         self.aspirateur: Aspirateur = aspirateur_class()
-        self.aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == ' '])
-        self.aspirateur_cell.move_in(self.aspirateur)
-        self.aspirateur_cell.show()
 
-    def get_surroundings(self, cell: Cell):
+    def get_surroundings(self, cell: Cell) -> Dict[str, Cell]:
         surroundings = {}
         for name, direction in DIRECTIONS.items():
             surrounding: Cell = self.cells[(cell.coordinates[0] + direction[0], cell.coordinates[1] + direction[1])]
-            if surrounding.value == ' ':
+            if surrounding.value == " ":
                 surroundings[name] = surrounding
         return surroundings
 
-    def mainloop(self, n=0):
+    def mainloop(self, n=0) -> None:
+        aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == " "])
+        aspirateur_cell.move_in(self.aspirateur)
         while self.active:
             self.loop_number += 1
             self.update()
-            self.aspirateur_cell.move_from(self.aspirateur)
-            self.aspirateur_cell = self.aspirateur.move(self.get_surroundings(self.aspirateur_cell))
-            self.aspirateur_cell.move_in(self.aspirateur)
+            aspirateur_cell.move_from(self.aspirateur)
+            aspirateur_cell = self.aspirateur.choose_cell_to_move_in(self.get_surroundings(aspirateur_cell))
+            aspirateur_cell.move_in(self.aspirateur)
             time.sleep(0.02)
 
-    def destroy(self):
-        loop_number = self.loop_number
-        print('loop number', loop_number)
-        surface = len(self.data[0]) * len(self.data)
-        print('surface', surface)
-        print('score', round(surface / loop_number, 2))
+    def destroy(self) -> None:
+        print("loop number", self.loop_number)
+        surface = len(self.room[0]) * len(self.room)
+        print("surface", surface)
+        print("score", round(surface / self.loop_number, 2))
         self.active = False
 
 
 class Aspirateur:
-
-    def move(self, surroundings: Dict[str, Cell]) -> Cell:
+    def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         raise NotImplementedError
 
 
 class AspirateurRandom(Aspirateur):
-
     def __init__(self):
         self.last_cells = None, None
 
-    def move(self, surroundings: Dict[str, Cell]) -> Cell:
+    def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         return random.choice(list(surroundings.values()))
 
 
 class CleverAspirateur(Aspirateur):
-
     def __init__(self):
         self.coordinates = 0, 0
         self.passed = {self.coordinates: 0}
 
-    def move(self, surroundings: Dict[str, Cell]) -> Cell:
+    def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         """
         surroundings : {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
         surroundings contains only available directions
@@ -146,7 +128,7 @@ class CleverAspirateur(Aspirateur):
             # compute relative coordinates of the direction
             coordinates = (
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
-                self.coordinates[1] + DIRECTIONS[next_direction][1]
+                self.coordinates[1] + DIRECTIONS[next_direction][1],
             )
             buffer[next_direction] = coordinates
             if coordinates not in self.passed:
@@ -164,7 +146,11 @@ class CleverAspirateur(Aspirateur):
         return surroundings[next_direction]
 
 
-if __name__ == '__main__':
-    app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(10, 50), random.randint(10, 50)))
+if __name__ == "__main__":
+    from labygenerator import get_full_string_format_lab
+    from rooms import *
+
+    app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71)))
+    # app = RoomGui(CleverAspirateur, room1)
     # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
     app.mainloop()

@@ -1,4 +1,7 @@
-def creer_matrice(hauteur=15, largeur=25, remplissage='M'):
+from typing import List
+
+
+def creer_matrice(hauteur=15, largeur=25, remplissage="M"):
     matrice = []
     for i in range(hauteur):
         matrice.append([])
@@ -7,7 +10,7 @@ def creer_matrice(hauteur=15, largeur=25, remplissage='M'):
     return matrice
 
 
-def dessiner_bordure(matrice, bordure='B'):
+def dessiner_bordure(matrice, bordure="B"):
     hauteur = len(matrice)
     largeur = len(matrice[0])
     for h in range(hauteur):
@@ -20,8 +23,8 @@ def dessiner_bordure(matrice, bordure='B'):
 
 
 def placer_depart_arrivee(matrice):
-    matrice[1][1] = 'X'
-    matrice[len(matrice) - 2][len(matrice[0]) - 2] = 'A'
+    matrice[1][1] = "X"
+    matrice[len(matrice) - 2][len(matrice[0]) - 2] = "A"
     return matrice
 
 
@@ -30,13 +33,14 @@ def renvoyer_cases_contact(matrice, h, l, case):
         matrice[h - 1][l],  # en-haut
         matrice[h + 1][l],  # en-bas
         matrice[h][l - 1],  # à gauche
-        matrice[h][l + 1]  # à droite
+        matrice[h][l + 1],  # à droite
     ]
     return contacts.count(case)
 
 
 def determiner_si_devenir_chemin(matrice, h, l, mur, chemin, bordure):
     from random import randint
+
     rand, contact, bord = False, False, False
     if randint(0, 2) == 0:
         rand = True
@@ -65,14 +69,14 @@ def creer_laby(hauteur=15, largeur=15):
         mat = dessiner_bordure(mat)
         mat[1][1] = 0
         for i in range(nbrTours):
-            mat = creer_chemin(mat, 'M', ' ', 'B')
+            mat = creer_chemin(mat, "M", " ", "B")
         mat = placer_depart_arrivee(mat)
-        if renvoyer_cases_contact(mat, len(mat) - 2, len(mat[0]) - 2, ' ') > 0:
+        if renvoyer_cases_contact(mat, len(mat) - 2, len(mat[0]) - 2, " ") > 0:
             chemin_fini = True
         else:
             nbrTours += 20
     return mat
 
 
-def get_full_string_format_lab(height, width):
-    return [''.join(row).replace('B', 'M').replace('A', ' ').replace('X', ' ') for row in creer_laby(height, width)]
+def get_full_string_format_lab(height, width) -> List[str]:
+    return ["".join(row).replace("B", "M").replace("A", " ").replace("X", " ") for row in creer_laby(height, width)]
