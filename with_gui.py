@@ -53,9 +53,8 @@ class Cell:
 
 class RoomGui(tk.Tk):
     def __init__(self, aspirateur_class: Type[Aspirateur], room: List[str]):
-        print(room)
         super().__init__()
-        self.loop_number = 0
+        self.step_nbr = 0
         self.title("Laspirateur")
         self.active = True
 
@@ -83,7 +82,7 @@ class RoomGui(tk.Tk):
         aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == " "])
         aspirateur_cell.move_in(self.aspirateur)
         while self.active:
-            self.loop_number += 1
+            self.step_nbr += 1
             self.update()
             aspirateur_cell.move_from(self.aspirateur)
             aspirateur_cell = self.aspirateur.choose_cell_to_move_in(self.get_surroundings(aspirateur_cell))
@@ -91,10 +90,9 @@ class RoomGui(tk.Tk):
             time.sleep(0.02)
 
     def destroy(self) -> None:
-        print("loop number", self.loop_number)
-        surface = len(self.room[0]) * len(self.room)
-        print("surface", surface)
-        print("score", round(surface / self.loop_number, 2))
+        print(f"Step number : {self.step_nbr}")
+        visited_cells_nbr = sum(1 for cell in self.cells.values() if cell.has_been_visited)
+        print(f"Score : {round((visited_cells_nbr ** 2 / (self.step_nbr * visited_cells_nbr)), 2)}")
         self.active = False
 
 
@@ -150,7 +148,7 @@ if __name__ == "__main__":
     from labygenerator import get_full_string_format_lab
     from rooms import *
 
-    app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71)))
-    # app = RoomGui(CleverAspirateur, room1)
+    # app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71)))
+    app = RoomGui(CleverAspirateur, room1)
     # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
     app.mainloop()
