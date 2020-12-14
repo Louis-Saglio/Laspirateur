@@ -1,13 +1,13 @@
+from random import seed, randint
 from typing import List
 
 
-def creer_matrice(hauteur=15, largeur=25, remplissage="M"):
-    matrice = []
-    for i in range(hauteur):
-        matrice.append([])
-        for c in range(largeur):
-            matrice[i].append(remplissage)
-    return matrice
+seed(1)
+
+WALL = "M"
+BORDER = "B"
+START = "X"
+FINNISH = "A"
 
 
 def dessiner_bordure(matrice, bordure="B"):
@@ -28,27 +28,24 @@ def placer_depart_arrivee(matrice):
     return matrice
 
 
-def renvoyer_cases_contact(matrice, h, l, case):
-    contacts = [
-        matrice[h - 1][l],  # en-haut
-        matrice[h + 1][l],  # en-bas
-        matrice[h][l - 1],  # à gauche
-        matrice[h][l + 1],  # à droite
-    ]
-    return contacts.count(case)
+def get_nbr_of_neighbours_of_type(matrix, h, l, case_type):
+    return [
+        matrix[h - 1][l],  # en-haut
+        matrix[h + 1][l],  # en-bas
+        matrix[h][l - 1],  # à gauche
+        matrix[h][l + 1],  # à droite
+    ].count(case_type)
 
 
-def determiner_si_devenir_chemin(matrice, h, l, mur, chemin, bordure):
-    from random import randint
-
-    rand, contact, bord = False, False, False
-    if randint(0, 2) == 0:
-        rand = True
-    if renvoyer_cases_contact(matrice, h, l, mur) + renvoyer_cases_contact(matrice, h, l, bordure) == 3:
-        contact = True
-    if matrice[h][l] != bordure:
-        bord = True
-    return rand and contact and bord
+def determiner_si_devenir_chemin(matrice, h, l, mur, bordure):
+    do = True
+    if matrice[h][l] == bordure:
+        do = False
+    elif randint(0, 2) != 0:
+        do = False
+    elif get_nbr_of_neighbours_of_type(matrice, h, l, mur) + get_nbr_of_neighbours_of_type(matrice, h, l, bordure) != 3:
+        do = False
+    return do
 
 
 def creer_chemin(matrice, mur, chemin, bordure):
@@ -56,27 +53,36 @@ def creer_chemin(matrice, mur, chemin, bordure):
     largeur = len(matrice[0])
     for h in range(hauteur - 1):
         for l in range(largeur - 1):
-            if determiner_si_devenir_chemin(matrice, h, l, mur, chemin, bordure) is True:
+            if determiner_si_devenir_chemin(matrice, h, l, mur, bordure) is True:
                 matrice[h][l] = chemin
     return matrice
 
 
-def creer_laby(hauteur=15, largeur=15):
-    nbrTours = round(((hauteur * largeur) / 10) * 1.5)
+def creer_laby(hauteur=15, largeur=15, wall="M"):
+    nbr_tours = round(((hauteur * largeur) / 10) * 1.5)
     chemin_fini = False
     while chemin_fini is False:
-        mat = creer_matrice(hauteur, largeur)
+        mat = [[wall for __ in range(largeur)] for _ in range(hauteur)]
         mat = dessiner_bordure(mat)
         mat[1][1] = 0
-        for i in range(nbrTours):
+        for i in range(nbr_tours):
             mat = creer_chemin(mat, "M", " ", "B")
         mat = placer_depart_arrivee(mat)
-        if renvoyer_cases_contact(mat, len(mat) - 2, len(mat[0]) - 2, " ") > 0:
+        if get_nbr_of_neighbours_of_type(mat, len(mat) - 2, len(mat[0]) - 2, " ") > 0:
             chemin_fini = True
         else:
-            nbrTours += 20
+            nbr_tours += 20
     return mat
 
 
 def get_full_string_format_lab(height, width) -> List[str]:
     return ["".join(row).replace("B", "M").replace("A", " ").replace("X", " ") for row in creer_laby(height, width)]
+
+
+if __name__ == "__main__":
+    from time import time
+
+    start = time()
+    for _ in range(100):
+        creer_laby(30, 30)
+    print(round(time() - start, 3))
