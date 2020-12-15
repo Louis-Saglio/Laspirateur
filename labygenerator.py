@@ -10,6 +10,16 @@ START = "X"
 FINNISH = "A"
 
 
+def random_generator(start, stop, size):
+    buffer = [randint(start, stop) for _ in range(size)]
+    while True:
+        for i in buffer[randint(0, len(buffer) - 1):]:
+            yield i
+
+
+RANDOM_GENERATOR = random_generator(0, 2, 500)
+
+
 def dessiner_bordure(matrice, bordure="B"):
     hauteur = len(matrice)
     largeur = len(matrice[0])
@@ -41,7 +51,7 @@ def determiner_si_devenir_chemin(matrice, h, l, mur, bordure):
     do = True
     if matrice[h][l] == bordure:
         do = False
-    elif randint(0, 2) != 0:
+    elif next(RANDOM_GENERATOR) != 0:
         do = False
     elif get_nbr_of_neighbours_of_type(matrice, h, l, mur) + get_nbr_of_neighbours_of_type(matrice, h, l, bordure) != 3:
         do = False
@@ -83,6 +93,6 @@ if __name__ == "__main__":
     from time import time
 
     start = time()
-    for _ in range(100):
-        creer_laby(30, 30)
+    for _ in range(1):
+        creer_laby(100, 100)
     print(round(time() - start, 3))
