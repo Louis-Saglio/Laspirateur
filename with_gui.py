@@ -9,20 +9,23 @@ from typing import Dict, Type, List, Tuple
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
 # COLORS = {"M": "#9c5959", " ": "#5ebeff", "aspirateur": "#768b99", "passed": "#306182"}
-COLORS = {"M": "#cc3300", " ": "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900"}
+COLORS = {"M": "#cc3300", " ": "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
 
 
 random.seed(0)
 
 
 class Cell:
-    def __init__(self, room: RoomGui, value: str, coordinates: Tuple[int, int]):
-        self.room = room
+    def __init__(self, frame: tk.Frame, value: str, coordinates: Tuple[int, int]):
         self.value = value
         self.content = set()
         self.coordinates = coordinates
         self.has_been_visited = False
-        self.frame = None
+        self.frame = frame
+
+    @property
+    def is_passable(self):
+        return self.value == " "
 
     def move_in(self, pawn: object) -> None:
         self.content.add(pawn)
@@ -46,11 +49,7 @@ class Cell:
             color = COLORS["passed"]
         else:
             color = COLORS[self.value]
-        if self.frame is None:
-            self.frame = tk.Frame(self.room, height=self.room.cell_height, width=self.room.cell_width, background=color)
-        else:
-            self.frame.configure(background=color)
-        self.frame.grid(row=self.coordinates[0], column=self.coordinates[1])
+        self.frame.configure(background=color)
 
     def __hash__(self):
         return hash(self.coordinates)
@@ -69,9 +68,11 @@ class RoomGui(tk.Tk):
 
         self.cells = {}
         for i, row in enumerate(self.room):
-            for j, cell in enumerate(row):
-                self.cells[i, j] = Cell(self, cell, (i, j))
-                self.cells[i, j].show()
+            for j, cell_value in enumerate(row):
+                cell = Cell(tk.Frame(self, height=self.cell_height, width=self.cell_width), cell_value, (i, j))
+                cell.frame.grid(row=cell.coordinates[0], column=cell.coordinates[1])
+                self.cells[i, j] = cell
+                cell.show()
 
         self.aspirateur: Aspirateur = aspirateur_class()
 
@@ -79,8 +80,7 @@ class RoomGui(tk.Tk):
         surroundings = {}
         for name, direction in DIRECTIONS.items():
             surrounding: Cell = self.cells[(cell.coordinates[0] + direction[0], cell.coordinates[1] + direction[1])]
-            if surrounding.value == " ":
-                surroundings[name] = surrounding
+            surroundings[name] = surrounding
         return surroundings
 
     def mainloop(self, n=0) -> None:
@@ -89,10 +89,12 @@ class RoomGui(tk.Tk):
         while self.active:
             self.step_nbr += 1
             self.update()
-            aspirateur_cell.move_from(self.aspirateur)
-            aspirateur_cell = self.aspirateur.choose_cell_to_move_in(self.get_surroundings(aspirateur_cell))
-            aspirateur_cell.move_in(self.aspirateur)
-            time.sleep(0.02)
+            next_cell = self.aspirateur.choose_cell_to_move_in(self.get_surroundings(aspirateur_cell))
+            if next_cell.is_passable:
+                aspirateur_cell.move_from(self.aspirateur)
+                aspirateur_cell = next_cell
+                aspirateur_cell.move_in(self.aspirateur)
+            time.sleep(0.05)
 
     def destroy(self) -> None:
         print(f"Step number : {self.step_nbr}")
@@ -107,9 +109,6 @@ class Aspirateur:
 
 
 class AspirateurRandom(Aspirateur):
-    def __init__(self):
-        self.last_cells = None, None
-
     def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         return random.choice(list(surroundings.values()))
 
@@ -118,35 +117,42 @@ class CleverAspirateur(Aspirateur):
     def __init__(self):
         self.coordinates = 0, 0
         self.passed = defaultdict(int, {self.coordinates: 0})
+        # todo : use cell as key
 
     def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         """
         surroundings : {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
-        surroundings contains only available directions
         """
+        # todo : not sure if it should receive only cells where it is allowed to move in
         coordinates_of_surroundings = {}
-        cp_surroundings = list(surroundings.keys())
+        cp_surroundings = list(surroundings.items())
         random.shuffle(cp_surroundings)
-        for next_direction in cp_surroundings:
+        for next_direction, cell in cp_surroundings:
             # compute relative coordinates of the direction
             coordinates = (
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
                 self.coordinates[1] + DIRECTIONS[next_direction][1],
             )
             coordinates_of_surroundings[next_direction] = coordinates
-            if coordinates not in self.passed:
+            if coordinates not in self.passed and cell.is_passable:
                 # If we are never been in this cell, let's go into
                 break
         else:
             # If break statement is not raised
-            next_direction = min(surroundings, key=lambda x: self.passed[coordinates_of_surroundings[x]])
+            next_direction = min(
+                surroundings.items(),
+                key=lambda direction_cell_: self.passed[coordinates_of_surroundings[direction_cell_[0]]]
+                * direction_cell_[1].is_passable,
+            )[0]
             coordinates = coordinates_of_surroundings[next_direction]
         self.coordinates = coordinates
         self.passed[self.coordinates] += 1
+        # todo : do not assume we actually went into the selected cell
         return surroundings[next_direction]
 
 
 if __name__ == "__main__":
+
     def main():
         from labygenerator import get_full_string_format_lab
         from rooms import room1
