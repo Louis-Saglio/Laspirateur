@@ -8,7 +8,8 @@ from typing import Dict, Type, List, Tuple
 
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
-COLORS = {"M": "blue", " ": "yellow", "aspirateur": "red", "passed": "green"}
+# COLORS = {"M": "#9c5959", " ": "#5ebeff", "aspirateur": "#768b99", "passed": "#306182"}
+COLORS = {"M": "#cc3300", " ": "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900"}
 
 
 random.seed(0)
