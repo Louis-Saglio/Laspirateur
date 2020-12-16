@@ -3,11 +3,15 @@ from __future__ import annotations
 import random
 import time
 import tkinter as tk
+from collections import defaultdict
 from typing import Dict, Type, List, Tuple
 
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
 COLORS = {"M": "blue", " ": "yellow", "aspirateur": "red", "passed": "green"}
+
+
+random.seed(0)
 
 
 class Cell:
@@ -112,15 +116,15 @@ class AspirateurRandom(Aspirateur):
 class CleverAspirateur(Aspirateur):
     def __init__(self):
         self.coordinates = 0, 0
-        self.passed = {self.coordinates: 0}
+        self.passed = defaultdict(int, {self.coordinates: 0})
 
     def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         """
         surroundings : {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
         surroundings contains only available directions
         """
-        buffer = {}
-        cp_surroundings = list(surroundings)
+        coordinates_of_surroundings = {}
+        cp_surroundings = list(surroundings.keys())
         random.shuffle(cp_surroundings)
         for next_direction in cp_surroundings:
             # compute relative coordinates of the direction
@@ -128,27 +132,31 @@ class CleverAspirateur(Aspirateur):
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
                 self.coordinates[1] + DIRECTIONS[next_direction][1],
             )
-            buffer[next_direction] = coordinates
+            coordinates_of_surroundings[next_direction] = coordinates
             if coordinates not in self.passed:
                 # If we are never been in this cell, let's go into
                 break
         else:
             # If break statement is not raised
-            next_direction = min(surroundings, key=lambda x: self.passed[buffer[x]])
-            coordinates = buffer[next_direction]
+            next_direction = min(surroundings, key=lambda x: self.passed[coordinates_of_surroundings[x]])
+            coordinates = coordinates_of_surroundings[next_direction]
         self.coordinates = coordinates
-        if self.coordinates in self.passed:
-            self.passed[self.coordinates] += 1
-        else:
-            self.passed[self.coordinates] = 1
+        self.passed[self.coordinates] += 1
         return surroundings[next_direction]
 
 
 if __name__ == "__main__":
-    from labygenerator import get_full_string_format_lab
-    from rooms import *
+    def main():
+        from labygenerator import get_full_string_format_lab
+        from rooms import room1
 
-    # app = RoomGui(CleverAspirateur, get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71)))
-    app = RoomGui(CleverAspirateur, room1)
-    # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
-    app.mainloop()
+        # room = get_full_string_format_lab(30, 40)
+        # room = get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71))
+        room = room1
+
+        app = RoomGui(CleverAspirateur, room)
+        # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
+        app.mainloop()
+        return locals()
+
+    scope = main()

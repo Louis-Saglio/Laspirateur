@@ -47,7 +47,7 @@ def create_maze(height: int, width: int, wall: str = WALL, path: str = PATH, bor
                             maze[h][w] = path
         maze[1][1] = PLAYER
         maze[len(maze) - 2][len(maze[0]) - 2] = EXIT
-        if get_nearby_cells(maze, height - 2, width-2).count(path):
+        if get_nearby_cells(maze, height - 2, width - 2).count(path):
             path_is_complete = True
     # noinspection PyUnboundLocalVariable
     return maze
@@ -59,8 +59,9 @@ def get_full_string_format_lab(height, width) -> List[str]:
 
 if __name__ == "__main__":
     from time import time
+    import sys
 
     start = time()
-    for _ in range(1000):
-        create_maze(20, 20)
+    for _ in range(int(sys.argv[1])):
+        create_maze(int(sys.argv[2]), int(sys.argv[3]))
     print(round(time() - start, 3))
