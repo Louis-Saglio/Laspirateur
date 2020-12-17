@@ -8,8 +8,11 @@ from typing import Dict, Type, List, Tuple
 
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
+PATH = " "
+WALL = "M"
+
 # COLORS = {"M": "#9c5959", " ": "#5ebeff", "aspirateur": "#768b99", "passed": "#306182"}
-COLORS = {"M": "#cc3300", " ": "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
+COLORS = {WALL: "#cc3300", PATH: "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
 
 
 random.seed(0)
@@ -25,7 +28,7 @@ class Cell:
 
     @property
     def is_passable(self):
-        return self.value == " "
+        return self.value == PATH
 
     def move_in(self, pawn: object) -> None:
         self.content.add(pawn)
@@ -76,11 +79,12 @@ class RoomGui(tk.Tk):
 
         self.aspirateur: Aspirateur = aspirateur_class()
 
-    def get_surroundings(self, cell: Cell) -> Dict[str, Cell]:
+    def get_nearby_path_cells(self, cell: Cell) -> Dict[str, Cell]:
         surroundings = {}
         for name, direction in DIRECTIONS.items():
             surrounding: Cell = self.cells[(cell.coordinates[0] + direction[0], cell.coordinates[1] + direction[1])]
-            surroundings[name] = surrounding
+            if surrounding.value == " ":
+                surroundings[name] = surrounding
         return surroundings
 
     def mainloop(self, n=0) -> None:
@@ -89,11 +93,9 @@ class RoomGui(tk.Tk):
         while self.active:
             self.step_nbr += 1
             self.update()
-            next_cell = self.aspirateur.choose_cell_to_move_in(self.get_surroundings(aspirateur_cell))
-            if next_cell.is_passable:
-                aspirateur_cell.move_from(self.aspirateur)
-                aspirateur_cell = next_cell
-                aspirateur_cell.move_in(self.aspirateur)
+            aspirateur_cell.move_from(self.aspirateur)
+            aspirateur_cell = self.aspirateur.choose_cell_to_move_in(self.get_nearby_path_cells(aspirateur_cell))
+            aspirateur_cell.move_in(self.aspirateur)
             time.sleep(0.05)
 
     def destroy(self) -> None:
@@ -122,28 +124,24 @@ class CleverAspirateur(Aspirateur):
     def choose_cell_to_move_in(self, surroundings: Dict[str, Cell]) -> Cell:
         """
         surroundings : {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
+        surroundings contains only available directions
         """
-        # todo : not sure if it should receive only cells where it is allowed to move in
         coordinates_of_surroundings = {}
-        cp_surroundings = list(surroundings.items())
+        cp_surroundings = list(surroundings.keys())
         random.shuffle(cp_surroundings)
-        for next_direction, cell in cp_surroundings:
+        for next_direction in cp_surroundings:
             # compute relative coordinates of the direction
             coordinates = (
                 self.coordinates[0] + DIRECTIONS[next_direction][0],
                 self.coordinates[1] + DIRECTIONS[next_direction][1],
             )
             coordinates_of_surroundings[next_direction] = coordinates
-            if coordinates not in self.passed and cell.is_passable:
+            if coordinates not in self.passed:
                 # If we are never been in this cell, let's go into
                 break
         else:
             # If break statement is not raised
-            next_direction = min(
-                surroundings.items(),
-                key=lambda direction_cell_: self.passed[coordinates_of_surroundings[direction_cell_[0]]]
-                * direction_cell_[1].is_passable,
-            )[0]
+            next_direction = min(surroundings, key=lambda x: self.passed[coordinates_of_surroundings[x]])
             coordinates = coordinates_of_surroundings[next_direction]
         self.coordinates = coordinates
         self.passed[self.coordinates] += 1
