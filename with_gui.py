@@ -16,12 +16,12 @@ random.seed(0)
 
 
 class Cell:
-    def __init__(self, frame: tk.Frame, value: Literal["M", " "], coordinates: tuple[int, int]):
+    def __init__(self, frame: tk.Frame, value: Literal["M", " "], coordinates: tuple[int, int], is_being_seen=False):
         self.value = value
         self.content = set()
         self.coordinates = coordinates
         self.has_been_visited = False
-        self._is_being_seen = False
+        self._is_being_seen = is_being_seen
         self.frame = frame
 
     @property
@@ -86,7 +86,7 @@ class RoomGui(tk.Tk):
         self.cells = {}
         for i, row in enumerate(self.room):
             for j, cell_value in enumerate(row):
-                cell = Cell(tk.Frame(self, height=self.cell_height, width=self.cell_width), cell_value, (i, j))
+                cell = Cell(tk.Frame(self, height=self.cell_height, width=self.cell_width), cell_value, (i, j), is_being_seen=not hide_invisible_cells)
                 cell.frame.grid(row=cell.coordinates[0], column=cell.coordinates[1])
                 self.cells[i, j] = cell
                 cell.show()
