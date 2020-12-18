@@ -8,11 +8,11 @@ from typing import Literal, Type, Union
 
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
-# COLORS = {"M": "#9c5959", " ": "#5ebeff", "aspirateur": "#768b99", "passed": "#306182"}
-COLORS = {"M": "#cc3300", " ": "#99cc33", "aspirateur": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
+# COLORS = {"M": "#9c5959", " ": "#5ebeff", "agent": "#768b99", "passed": "#306182"}
+COLORS = {"M": "#cc3300", " ": "#99cc33", "agent": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
 
 
-random.seed(0)
+random.seed(1)
 
 
 class Cell:
@@ -42,15 +42,15 @@ class Cell:
         self.content.remove(pawn)
         self.show()
 
-    def contains_aspirateur(self) -> bool:
+    def contains_agent(self) -> bool:
         for item in self.content:
-            if isinstance(item, Aspirateur):
+            if isinstance(item, Agent):
                 return True
         return False
 
     def show(self) -> None:
-        if self.contains_aspirateur():
-            color = COLORS["aspirateur"]
+        if self.contains_agent():
+            color = COLORS["agent"]
         elif not self.is_being_seen:
             color = COLORS["invisible"]
         elif self.has_been_visited:
@@ -66,14 +66,14 @@ class Cell:
 class RoomGui(tk.Tk):
     def __init__(
         self,
-        aspirateur_class: Type[Aspirateur],
+        agent_class: Type[Agent],
         room: list[Literal[" ", "M"]],
         delay: Union[int, float],
         hide_invisible_cells=False,
     ):
         super().__init__()
         self.step_nbr = 0
-        self.title("Laspirateur")
+        self.title("agent")
         self.active = True
 
         self.room = room
@@ -86,23 +86,28 @@ class RoomGui(tk.Tk):
         self.cells = {}
         for i, row in enumerate(self.room):
             for j, cell_value in enumerate(row):
-                cell = Cell(tk.Frame(self, height=self.cell_height, width=self.cell_width), cell_value, (i, j), is_being_seen=not hide_invisible_cells)
+                cell = Cell(
+                    tk.Frame(self, height=self.cell_height, width=self.cell_width),
+                    cell_value,
+                    (i, j),
+                    is_being_seen=not hide_invisible_cells,
+                )
                 cell.frame.grid(row=cell.coordinates[0], column=cell.coordinates[1])
                 self.cells[i, j] = cell
                 cell.show()
 
-        self.aspirateur: Aspirateur = aspirateur_class()
+        self.agent: Agent = agent_class()
 
     def mainloop(self, n=0) -> None:
-        aspirateur_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == " "])
-        aspirateur_cell.move_in(self.aspirateur)
+        agent_cell: Cell = random.choice([cell for cell in self.cells.values() if cell.value == " "])
+        agent_cell.move_in(self.agent)
         while self.active:
             self.step_nbr += 1
             nearby_path_cells = {}
             nearby_cells = []
             for name, direction in DIRECTIONS.items():
                 cell: Cell = self.cells[
-                    (aspirateur_cell.coordinates[0] + direction[0], aspirateur_cell.coordinates[1] + direction[1])
+                    (agent_cell.coordinates[0] + direction[0], agent_cell.coordinates[1] + direction[1])
                 ]
                 if self.hide_invisible_cells:
                     nearby_cells.append(cell)
@@ -111,9 +116,9 @@ class RoomGui(tk.Tk):
                     nearby_path_cells[name] = cell
             self.update()
             time.sleep(self.delay)
-            aspirateur_cell.move_from(self.aspirateur)
-            aspirateur_cell = self.aspirateur.choose_cell_to_move_in(nearby_path_cells)
-            aspirateur_cell.move_in(self.aspirateur)
+            agent_cell.move_from(self.agent)
+            agent_cell = self.agent.choose_cell_to_move_in(nearby_path_cells)
+            agent_cell.move_in(self.agent)
             self.update()
             if self.hide_invisible_cells:
                 for cell in nearby_cells:
@@ -126,17 +131,17 @@ class RoomGui(tk.Tk):
         self.active = False
 
 
-class Aspirateur:
+class Agent:
     def choose_cell_to_move_in(self, surroundings: dict[str, Cell]) -> Cell:
         raise NotImplementedError
 
 
-class AspirateurRandom(Aspirateur):
+class RandomAgent(Agent):
     def choose_cell_to_move_in(self, surroundings: dict[str, Cell]) -> Cell:
         return random.choice(list(surroundings.values()))
 
 
-class CleverAspirateur(Aspirateur):
+class CleverAgent(Agent):
     def __init__(self):
         self.coordinates = 0, 0
         self.passed = defaultdict(int, {self.coordinates: 0})
@@ -173,14 +178,17 @@ class CleverAspirateur(Aspirateur):
 if __name__ == "__main__":
 
     def main():
-        from rooms import room1
+        from rooms import room1, room2, room3, room4
 
         # room = get_full_string_format_lab(30, 40)
         # room = get_full_string_format_lab(random.randint(49, 50), random.randint(70, 71))
         room = room1
+        # room = random.choice((room1, room2, room3, room4))
 
-        app = RoomGui(CleverAspirateur, room, 0.3)
-        # app = RoomGui(CleverAspirateur, random.choice((room1, room2, room3, room4)))
+        agent = CleverAgent
+        agent = RandomAgent
+
+        app = RoomGui(agent, room, 0.05)
         app.mainloop()
         return locals()
 
