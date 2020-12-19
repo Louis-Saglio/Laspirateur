@@ -1,5 +1,5 @@
 from agent import CleverAgent, RandomAgent
-from with_gui import RoomGui
+from engine import RoomGui
 
 
 def main():

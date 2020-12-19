@@ -1,8 +1,7 @@
 import random
 from collections import defaultdict
 
-from agent_interface import Agent
-from with_gui import Cell, DIRECTIONS
+from engine import DIRECTIONS, Agent, Cell
 
 
 class RandomAgent(Agent):

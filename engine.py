@@ -5,8 +5,6 @@ import time
 import tkinter as tk
 from typing import Literal, Type, Union
 
-from agent_interface import Agent
-
 DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
 # COLORS = {"M": "#9c5959", " ": "#5ebeff", "agent": "#768b99", "passed": "#306182"}
@@ -14,6 +12,11 @@ COLORS = {"M": "#cc3300", " ": "#99cc33", "agent": "#ffcc00", "passed": "#339900
 
 
 random.seed(1)
+
+
+class Agent:
+    def choose_cell_to_move_in(self, surroundings: dict[str, Cell]) -> Cell:
+        raise NotImplementedError
 
 
 class Cell:
