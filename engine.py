@@ -5,7 +5,9 @@ import time
 import tkinter as tk
 from typing import Literal, Type, Union
 
-DIRECTIONS = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
+DIRECTION_TYPE = Literal["UP", "DOWN", "LEFT", "RIGHT"]
+# noinspection PyTypeChecker
+DIRECTIONS: dict[DIRECTION_TYPE, tuple[int, int]] = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
 # COLORS = {"M": "#9c5959", " ": "#5ebeff", "agent": "#768b99", "passed": "#306182"}
 COLORS = {"M": "#cc3300", " ": "#99cc33", "agent": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
@@ -15,7 +17,7 @@ random.seed(1)
 
 
 class Agent:
-    def choose_cell_to_move_in(self, surroundings: dict[str, Cell]) -> Cell:
+    def choose_cell_to_move_in(self, available_directions: tuple[DIRECTION_TYPE, ...]) -> DIRECTION_TYPE:
         raise NotImplementedError
 
 
@@ -121,7 +123,7 @@ class RoomGui(tk.Tk):
             self.update()
             time.sleep(self.delay)
             agent_cell.move_from(self.agent)
-            agent_cell = self.agent.choose_cell_to_move_in(nearby_path_cells)
+            agent_cell = nearby_path_cells[self.agent.choose_cell_to_move_in(tuple(nearby_path_cells.keys()))]
             agent_cell.move_in(self.agent)
             self.update()
             if self.hide_invisible_cells:
