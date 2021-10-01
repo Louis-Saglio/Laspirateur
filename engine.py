@@ -3,21 +3,21 @@ from __future__ import annotations
 import random
 import time
 import tkinter as tk
-from typing import Literal, Type, Union
+from typing import Type, Union, Literal
 
-DIRECTION_TYPE = Literal["UP", "DOWN", "LEFT", "RIGHT"]
+DIRECTION = Literal["UP", "DOWN", "LEFT", "RIGHT"]
 # noinspection PyTypeChecker
-DIRECTIONS: dict[DIRECTION_TYPE, tuple[int, int]] = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
+DIRECTIONS: dict[DIRECTION, tuple[int, int]] = {"UP": (-1, 0), "DOWN": (+1, 0), "LEFT": (0, -1), "RIGHT": (0, +1)}
 
-# COLORS = {"M": "#9c5959", " ": "#5ebeff", "agent": "#768b99", "passed": "#306182"}
-COLORS = {"M": "#cc3300", " ": "#99cc33", "agent": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
+COLORS = {"M": "#9c5959", " ": "#5ebeff", "agent": "#768b99", "passed": "#306182", "invisible": "#000000"}
+# COLORS = {"M": "#cc3300", " ": "#99cc33", "agent": "#ffcc00", "passed": "#339900", "invisible": "#000000"}
 
 
 random.seed(1)
 
 
 class Agent:
-    def choose_cell_to_move_in(self, available_directions: tuple[DIRECTION_TYPE, ...]) -> DIRECTION_TYPE:
+    def choose_cell_to_move_in(self, available_directions: tuple[DIRECTION, ...]) -> DIRECTION:
         raise NotImplementedError
 
 
@@ -73,7 +73,7 @@ class RoomGui(tk.Tk):
     def __init__(
         self,
         agent_class: Type[Agent],
-        room: list[Literal[" ", "M"]],
+        room: list[CELL_VALUE],
         delay: Union[int, float],
         hide_invisible_cells=False,
     ):

@@ -1,12 +1,13 @@
 from random import seed, randint
+# from typing import List, Literal
 from typing import List
 
+# CELL_VALUE = Literal[" ", "M"]
+CELL_VALUE = str
 
-seed(1)
-
-WALL = "M"
+WALL = "W"
 BORDER = "B"
-PLAYER = "X"
+PLAYER = "S"
 EXIT = "A"
 PATH = " "
 
@@ -53,8 +54,12 @@ def create_maze(height: int, width: int, wall: str = WALL, path: str = PATH, bor
     return maze
 
 
-def get_full_string_format_lab(height, width) -> List[str]:
-    return ["".join(row).replace("B", "M").replace("A", " ").replace("X", " ") for row in create_maze(height, width)]
+def get_full_string_format_lab(height, width) -> List[CELL_VALUE]:
+    # noinspection PyTypeChecker
+    return [
+        "".join(row).replace("B", "M").replace("A", " ").replace("X", " ").replace("S", "M").replace('W', 'M')
+        for row in create_maze(height, width)
+    ]
 
 
 if __name__ == "__main__":
